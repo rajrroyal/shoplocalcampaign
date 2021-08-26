@@ -1,0 +1,46 @@
+version: '3.7'
+
+services:
+    app:
+        build:
+            context: ./
+        container_name: shop20
+        restart: unless-stopped
+        environment:
+            - APP_ENV=${APP_ENV}
+        ports:
+            - 80:8080
+            - 443:443
+            - 6001:6001
+        volumes:
+            - .:/app:delegated
+        links:
+            - mysql
+            - redis
+        depends_on:
+            - mysql
+            - redis
+
+    mysql:
+        container_name: shop20-mysql
+        restart: unless-stopped
+        image: mysql:5.7.28
+        environment:
+            MYSQL_DATABASE: ${DB_DATABASE}
+            MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_PASSWORD: ${DB_PASSWORD}
+        volumes:
+            - ./storage/mysql:/var/lib/mysql
+
+    redis:
+        container_name: shop20-redis
+        restart: unless-stopped
+        image: redis
+        entrypoint: redis-server --appendonly yes
+        volumes:
+            - ./storage/redis:/data
+
+networks:
+    default:
+        name: shop20-network
